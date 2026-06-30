@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashi — TL Readiness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #f7f4f0;
+  --surface:   #ffffff;
+  --surface2:  #f2ede7;
+  --surface3:  #ebe4db;
+  --border:    #e0d8ce;
+  --border2:   #c8bfb4;
+  --text:      #120d09;
+  --text2:     #302820;
+  --text3:     #6a6058;
+  --navy:      #1a2348;
+  --gold:      #b8860b;
+  --gold-bg:   #fdf8ec;
+  --gold-mid:  #e8c96a;
+  --green:     #1a5c30;
+  --green-bg:  #edf7f1;
+  --red:       #7a1f1f;
+  --red-bg:    #fdf0f0;
+  --amber:     #7a5a10;
+  --amber-bg:  #fdf6e3;
+  --blue:      #1e4a8a;
+  --blue-bg:   #eef3fb;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ─────────────────────────────────── */
+.shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 230px;
+  background: var(--navy);
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: 3px 0 20px rgba(0,0,0,0.12);
+}
+
+.main {
+  flex: 1;
+  padding: 2.5rem 2.5rem;
+  max-width: 980px;
+  background: var(--bg);
+}
+
+/* ── SIDEBAR ─────────────────────────────────── */
+.logo {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1.5rem;
+}
+.logo-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: #f5f0e6;
+  letter-spacing: -0.3px;
+}
+.logo-sub {
+  font-size: 10px;
+  color: rgba(245,240,230,0.38);
+  margin-top: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sync-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  margin: 0 1rem 1.25rem;
+  font-size: 11px;
+  color: rgba(245,240,230,0.4);
+}
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.syncing { background: #e8c96a; animation: pulse 1s infinite; }
+.sync-dot.synced  { background: #52c97a; }
+.sync-dot.error   { background: #f06a6a; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+.nav-section { padding: 0 1rem; margin-bottom: 0.5rem; }
+.nav-label {
+  font-size: 9px;
+  color: rgba(245,240,230,0.28);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 0 0.5rem;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(245,240,230,0.52);
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+.nav-item:hover  { background: rgba(255,255,255,0.07); color: rgba(245,240,230,0.9); }
+.nav-item.active { background: rgba(184,134,11,0.18);  color: #f5ede0; }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(245,240,230,0.18); flex-shrink: 0; }
+.nav-item.active .nav-dot { background: var(--gold-mid); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.week-indicator {
+  font-size: 9px;
+  color: rgba(245,240,230,0.28);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.week-pills { display: flex; gap: 5px; }
+.wpill {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: rgba(245,240,230,0.35);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+}
+.wpill:hover  { border-color: var(--gold-mid); color: var(--gold-mid); }
+.wpill.active { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 600; }
+
+/* ── SETUP BANNER ─────────────────────────────── */
+.setup-banner {
+  background: var(--amber-bg);
+  border: 1px solid rgba(122,90,16,0.18);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 1.5rem;
+  font-size: 13px;
+  color: var(--amber);
+  display: none;
+  line-height: 1.6;
+}
+.setup-banner a { color: var(--gold); text-decoration: underline; cursor: pointer; }
+.setup-banner input {
+  width: 100%;
+  margin-top: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+.setup-banner .sbtn {
+  margin-top: 10px;
+  padding: 7px 18px;
+  background: var(--navy);
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #f5f0e6;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+/* ── PAGES ─────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header { margin-bottom: 2.25rem; }
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 34px;
+  color: #0e1530;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-weight: 400;
+}
+.page-sub { font-size: 14px; color: #5c5248; margin-top: 6px; line-height: 1.65; }
+.date-pill {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--gold);
+  background: var(--gold-bg);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-top: 10px;
+  border: 1px solid rgba(184,134,11,0.2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ── WEEK NAVIGATION ──────────────────────────── */
+.week-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.wtab {
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  background: var(--surface);
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.wtab:hover  { border-color: var(--navy); color: var(--navy); }
+.wtab.active { background: var(--navy); border-color: var(--navy); color: #f5f0e6; font-weight: 500; }
+
+.week-focus {
+  background: var(--gold-bg);
+  border: 1px solid rgba(184,134,11,0.18);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 2rem;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+.week-focus strong { color: var(--navy); font-weight: 600; }
+
+/* ── SECTIONS ─────────────────────────────────── */
+.section { margin-bottom: 2.25rem; }
+.sec-head {
+  font-size: 10px;
+  color: #7a5c00;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(122,92,0,0.22);
+  font-weight: 700;
+}
+
+/* ── TABLES ───────────────────────────────────── */
+.mtable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+}
+.mtable th {
+  font-size: 10px;
+  color: #3a3028;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  background: var(--surface2);
+}
+.mtable td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: #140e0a;
+  vertical-align: middle;
+}
+.mtable tr:last-child td { border-bottom: none; }
+.mtable tbody tr:hover td { background: var(--surface2); }
+.mtable tfoot td { background: var(--surface2); font-size: 12px; }
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+}
+.audit-table th {
+  font-size: 10px;
+  color: #3a3028;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  background: var(--surface2);
+}
+.audit-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  vertical-align: middle;
+}
+.audit-table tr:last-child td { border-bottom: none; }
+
+.tbd-th { background: var(--amber-bg) !important; color: var(--amber) !important; }
+.tbd-td { background: #fffbf3; }
+
+/* ── INPUTS ───────────────────────────────────── */
+.num-in {
+  width: 52px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 4px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.num-in:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,134,11,0.10); }
+.num-in.tbd { border-color: rgba(184,134,11,0.25); }
+
+.wide-in {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── TOGGLE BUTTONS ───────────────────────────── */
+.toggle { display: flex; gap: 5px; }
+.tbtn {
+  padding: 4px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  font-size: 11px;
+  color: var(--text3);
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.12s;
+  font-family: 'DM Sans', sans-serif;
+}
+.tbtn:hover { border-color: var(--text2); color: var(--text2); }
+.tbtn.yes { background: var(--green-bg); border-color: rgba(26,92,48,0.25); color: var(--green); }
+.tbtn.no  { background: var(--red-bg);   border-color: rgba(122,31,31,0.25); color: var(--red); }
+
+/* ── ACCOUNTABILITY CHECKS ────────────────────── */
+.acc-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: border-color 0.15s;
+}
+.acc-item.state-yes { border-color: rgba(26,92,48,0.22); background: var(--green-bg); }
+.acc-item.state-no  { border-color: rgba(122,31,31,0.22); background: var(--red-bg); }
+.acc-text { flex: 1; }
+.acc-label { font-size: 13px; color: #0e1530; font-weight: 500; }
+.acc-sub   { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.5; }
+.acc-btns  { display: flex; gap: 6px; }
+.abtn {
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.12s;
+  font-family: 'DM Sans', sans-serif;
+}
+.abtn.yes { background: var(--green-bg); border-color: rgba(26,92,48,0.25); color: var(--green); }
+.abtn.no  { background: var(--red-bg);   border-color: rgba(122,31,31,0.25); color: var(--red); }
+
+/* ── RATING STARS ─────────────────────────────── */
+.rating-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+}
+.rrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.rrow:last-child { border-bottom: none; }
+.rrow-text { flex: 1; }
+.rrow-label { font-size: 13px; color: #0e1530; font-weight: 500; }
+.rrow-sub   { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.5; }
+.stars { display: flex; gap: 6px; }
+.star {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface2);
+  user-select: none;
+}
+.star:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+.star.lit   { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); font-weight: 600; }
+
+/* ── NOTES ────────────────────────────────────── */
+textarea.notes-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  resize: none;
+  outline: none;
+  min-height: 100px;
+  line-height: 1.8;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+textarea.notes-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,134,11,0.08); }
+textarea.notes-input::placeholder { color: var(--border2); }
+
+/* ── BUTTONS ──────────────────────────────────── */
+.save-row { display: flex; align-items: center; gap: 12px; margin-top: 1.5rem; }
+.btn-primary {
+  padding: 11px 28px;
+  background: var(--navy);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: #f5f0e6;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover { background: #242d5e; }
+.btn-ghost {
+  padding: 11px 22px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { background: var(--surface2); border-color: var(--text3); color: var(--text); }
+.status-msg     { font-size: 12px; color: var(--text3); }
+.status-msg.ok  { color: var(--green); }
+.status-msg.err { color: var(--red); }
+
+/* ── ASSOCIATES ───────────────────────────────── */
+.assoc-add-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.assoc-add-input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  width: 240px;
+  transition: border-color 0.15s;
+}
+.assoc-add-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,134,11,0.08); }
+.assoc-add-btn {
+  padding: 8px 18px;
+  background: var(--navy);
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #f5f0e6;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--border2);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  transition: color 0.12s;
+}
+.remove-btn:hover { color: var(--red); }
+
+/* ── ANALYSIS ─────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.scard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.scard-val {
+  font-family: 'DM Serif Display', serif;
+  font-size: 30px;
+  color: var(--navy);
+}
+.scard-label {
+  font-size: 10px;
+  color: #5c5248;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.score-label { font-size: 12px; color: #3a302a; width: 210px; flex-shrink: 0; line-height: 1.5; }
+.score-bar   { flex: 1; background: var(--surface3); border-radius: 4px; height: 8px; }
+.score-fill  { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.score-pct   { font-size: 13px; color: var(--navy); width: 36px; text-align: right; font-weight: 600; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 10px; border-radius: 20px; font-weight: 500; }
+.badge-good { background: var(--green-bg); color: var(--green); border: 1px solid rgba(26,92,48,0.15); }
+.badge-mid  { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(122,90,16,0.15); }
+.badge-low  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(122,31,31,0.15); }
+
+.verdict-box {
+  background: var(--gold-bg);
+  border: 1px solid rgba(184,134,11,0.22);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.verdict-head { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 0.75rem; color: var(--navy); }
+.verdict-text { font-size: 13px; color: #3a302a; line-height: 1.85; }
+
+/* ── HISTORY ──────────────────────────────────── */
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.h-date  { font-size: 12px; color: var(--text3); width: 80px; flex-shrink: 0; padding-top: 2px; font-weight: 500; }
+.h-week  { font-size: 10px; color: var(--gold); margin-top: 3px; font-weight: 600; }
+.h-content { flex: 1; }
+.h-metrics { display: flex; gap: 14px; margin-bottom: 6px; flex-wrap: wrap; }
+.h-metric  { font-size: 12px; color: #3a302a; }
+.h-metric span { color: var(--navy); font-weight: 500; }
+.h-note  { font-size: 12px; color: var(--text3); line-height: 1.6; font-style: italic; margin-top: 4px; }
+.h-stars { display: flex; gap: 3px; margin-top: 5px; align-items: center; }
+.hstar   { width: 12px; height: 12px; border-radius: 3px; background: var(--border); }
+.hstar.lit { background: var(--gold-mid); }
+.empty-state { text-align: center; padding: 3rem; color: var(--text3); font-size: 13px; }
+
+/* ── SVM ──────────────────────────────────────── */
+.svmrow { margin-bottom: 20px; }
+.svmrow-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.svmrow-label { font-size: 12px; color: var(--text2); }
+.svm-bar-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.svm-who { font-size: 11px; color: var(--text3); width: 48px; }
+
+/* ── LOADING ──────────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(247,244,240,0.96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  gap: 16px;
+}
+.loading-text { font-size: 14px; color: var(--text2); font-family: 'DM Sans', sans-serif; }
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* ── FIXED QUESTIONS ──────────────────────────── */
+.fq-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+}
+.fq-row {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.fq-row:last-child { border-bottom: none; }
+.fq-qnum {
+  font-size: 9px;
+  color: var(--gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.fq-label {
+  font-size: 13px;
+  color: #0e1530;
+  font-weight: 500;
+  margin-bottom: 3px;
+  line-height: 1.5;
+}
+.fq-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.fq-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  outline: none;
+  resize: none;
+  line-height: 1.65;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fq-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,134,11,0.09); }
+.fq-input::placeholder { color: var(--border2); }
+
+@media (max-width:720px) {
+  .shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .sidebar-footer { display: none; }
+  .main { padding: 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading your data…</div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">Ashi</div>
+      <div class="logo-sub" id="tracker-tl-label">TL Readiness · Jun 2026</div>
+    </div>
+    <div class="sync-bar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Connecting…</span>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Track</div>
+      <button class="nav-item active" onclick="goTo('daily',this)"><div class="nav-dot"></div>Daily log</button>
+      <button class="nav-item" onclick="goTo('history',this)"><div class="nav-dot"></div>Log history</button>
+    </div>
+    <div class="nav-section" style="margin-top:1rem">
+      <div class="nav-label">Review</div>
+      <button class="nav-item" onclick="goTo('analysis',this)"><div class="nav-dot"></div>Month analysis</button>
+    <div class="nav-section" style="margin-top:1rem">
+      <div class="nav-label">Actions</div>
+      <button class="nav-item" onclick="goTo('followup',this)" id="nav-tr-followup"><div class="nav-dot"></div>Follow-up log <span id="tr-badge-fu" style="display:none;margin-left:auto;background:var(--gold);color:#1a2348;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px"></span></button>
+    </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="week-indicator">Current week</div>
+      <div class="week-pills">
+        <div class="wpill active" onclick="setWeek(1,this)">W1</div>
+        <div class="wpill" onclick="setWeek(2,this)">W2</div>
+        <div class="wpill" onclick="setWeek(3,this)">W3</div>
+        <div class="wpill" onclick="setWeek(4,this)">W4</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="setup-banner" id="setup-banner">
+      ⚙️ <strong>One-time setup:</strong> Paste your Apps Script deployment URL to enable Drive sync.
+      <a onclick="document.getElementById('setup-steps').style.display='block'">How to get it →</a>
+      <div id="setup-steps" style="display:none;margin-top:8px;font-size:12px;color:var(--text2);line-height:1.9">
+        1. Open the Google Sheet → Extensions → Apps Script<br>
+        2. Paste AppsScript_code.js → Save → Run setupSheets() once<br>
+        3. Deploy → New deployment → Web app → Execute as Me → Anyone → Deploy<br>
+        4. Copy the deployment URL and paste below
+      </div>
+      <input id="script-url-input" type="text" placeholder="https://script.google.com/macros/s/…/exec">
+      <button class="sbtn" onclick="saveScriptUrl()">Save & connect</button>
+    </div>
+
+    <!-- DAILY LOG — READ ONLY VIEW OF ASHI'S SUBMISSION -->
+    <div id="page-daily" class="page active">
+      <div class="page-header">
+        <div class="page-title">Today — Ashi's log</div>
+        <div class="page-sub">What Ashi submitted today. Read-only — your entries live in your own tracker.</div>
+        <div class="date-pill" id="today-label"></div>
+      </div>
+      <div id="today-view">
+        <div style="color:var(--text3);font-size:13px;font-style:italic;padding:2.5rem 0;text-align:center">Ashi has not submitted today's log yet.</div>
+      </div>
+    </div>
+
+
+    <!-- FOLLOW-UP PAGE -->
+    <div id="page-followup" class="page">
+      <div class="page-header">
+        <div class="page-title">Follow-up log</div>
+        <div class="page-sub">Flag something from a TL's entry. Add mentor notes. Track responses.</div>
+      </div>
+
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:8px;margin-bottom:1.5rem">
+        <button onclick="showFUTab('flags',this)" id="futab-flags"
+          style="padding:6px 18px;border-radius:20px;border:1px solid var(--navy);background:var(--navy);color:#f5f0e6;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">
+          Entry flags
+        </button>
+        <button onclick="showFUTab('notes',this)" id="futab-notes"
+          style="padding:6px 18px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">
+          Mentor notes
+        </button>
+      </div>
+
+      <!-- ── ENTRY FLAGS ── -->
+      <div id="fu-flags-view">
+        <!-- Add form -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05)">
+          <div class="sec-head" style="margin-bottom:0.75rem">New flag</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">TL</div>
+              <select id="tr-flag-tl" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"></select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Entry date flagging</div>
+              <input type="date" id="tr-flag-date" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Assigned to</div>
+              <select id="tr-flag-assigned" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+                <option value="Me">Me — internal</option>
+                <option value="Ashi">Ashi — she acts</option>
+                <option value="Both">Both — discuss</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">What you saw</div>
+            <input type="text" id="tr-flag-what" placeholder="e.g. Aishnee's conversion at 58% for 2nd cycle…"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Your comment / what needs to be addressed</div>
+            <textarea id="tr-flag-comment" rows="2" placeholder="What you want Ashi to do about it, and by when…"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.6"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Due date</div>
+              <input type="date" id="tr-flag-due" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+            </div>
+            <div style="margin-top:18px;display:flex;gap:8px;align-items:center">
+              <button onclick="trAddFlag()" style="padding:9px 22px;background:var(--navy);border:none;border-radius:9px;font-size:13px;color:#f5f0e6;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">Add flag</button>
+              <span id="tr-flag-status" style="font-size:12px;color:var(--text3)"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter + list -->
+        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap" id="tr-flag-filters">
+          <button class="wtab active" onclick="trFilterFlags('open',this)">Open</button>
+          <button class="wtab" onclick="trFilterFlags('ashi',this)">Ashi's action</button>
+          <button class="wtab" onclick="trFilterFlags('responded',this)">Responded</button>
+          <button class="wtab" onclick="trFilterFlags('resolved',this)">Resolved</button>
+          <button class="wtab" onclick="trFilterFlags('all',this)">All</button>
+        </div>
+        <div id="tr-flags-list"></div>
+      </div>
+
+      <!-- ── MENTOR NOTES ── -->
+      <div id="fu-notes-view" style="display:none">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05)">
+          <div class="sec-head" style="margin-bottom:0.75rem">New mentor note</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">TL</div>
+              <select id="tr-note-tl" onchange="trPopulateMentors()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"></select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Mentor</div>
+              <select id="tr-note-mentor" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none"><option value="">Select TL first</option></select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Follow-up needed?</div>
+              <select id="tr-note-followup" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+                <option value="No">No — observation only</option>
+                <option value="Yes">Yes — action needed</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Observation</div>
+            <textarea id="tr-note-text" rows="2" placeholder="What you observed about this mentor — pattern, concern, thing to watch…"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.6"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Follow-up by</div>
+              <input type="date" id="tr-note-due" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none">
+            </div>
+            <div style="margin-top:18px;display:flex;gap:8px;align-items:center">
+              <button onclick="trAddNote()" style="padding:9px 22px;background:var(--navy);border:none;border-radius:9px;font-size:13px;color:#f5f0e6;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">Add note</button>
+              <span id="tr-note-status" style="font-size:12px;color:var(--text3)"></span>
+            </div>
+          </div>
+        </div>
+        <div id="tr-notes-list"></div>
+      </div>
+
+    </div>
+
+    <!-- HISTORY -->
+    <div id="page-history" class="page">
+      <div class="page-header">
+        <div class="page-title">Log history</div>
+        <div class="page-sub">All saved daily entries across May</div>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- ANALYSIS -->
+    <div id="page-analysis" class="page">
+      <div class="page-header">
+        <div class="page-title">Month-end analysis</div>
+        <div class="page-sub">Readiness scorecard — your ratings + Ashi's self-log</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:2rem">
+        <button onclick="showAnalysisTab('scorecard',this)" id="atab-scorecard"
+          style="padding:7px 18px;border-radius:20px;border:1px solid var(--navy);background:var(--navy);color:#f5f0e6;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">
+          Scorecard
+        </button>
+        <button onclick="showAnalysisTab('ashilog',this)" id="atab-ashilog"
+          style="padding:7px 18px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+          Ashi's log entries
+        </button>
+      </div>
+      <div id="analysis-scorecard-view">
+      <div class="section"><div class="sec-head">May at a glance</div><div class="summary-grid" id="sum-grid"></div></div>
+      <div class="section"><div class="sec-head">Readiness scorecard</div><div id="sc-list"></div></div>
+      <div class="section"><div class="sec-head">Communication breakdown</div><div id="comm-breakdown"></div></div>
+      <div class="verdict-box"><div class="verdict-head" id="verdict-head">Readiness verdict</div><div class="verdict-text" id="verdict-text">Log at least a few days to generate a verdict.</div></div>
+      <!-- Ashi's self-log view -->
+      <div class="section" id="svm-section" style="display:none">
+        <div class="sec-head">Ashi's self-assessment vs your ratings</div>
+        <div id="svm-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem"></div>
+        <div id="svm-ratings"></div>
+        <div id="svm-reflections"></div>
+      </div>
+
+      </div><!-- end scorecard view -->
+
+      <!-- Ashi's full daily entries -->
+      <div class="section" id="ashi-entries-section" style="display:none">
+        <div class="sec-head">Ashi's daily log entries</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:1rem;">
+          Everything Ashi has filled in her self-log — raw entries, day by day.
+        </div>
+        <div id="ashi-entries-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ─── TL CONFIG — must match self-log exactly ─────────────────
+// Tracker reads all TLs so Jyotishman can see every pod.
+// To add a new TL in August: uncomment and fill the entry below.
+const TL_CONFIG = [
+  {
+    id:          'ashi',
+    name:        'Ashi',
+    sheetAction: 'read_ashi',
+    mentors:     ['Sarvagya','Nikhil','Stuti','Aishnee','Anushka'],
+  },
+  // {
+  //   id:          'sarvagya',
+  //   name:        'Sarvagya',
+  //   sheetAction: 'read_sarvagya',
+  //   mentors:     ['Hire B'],
+  // },
+  // {
+  //   id:          'nikhil',
+  //   name:        'Nikhil',
+  //   sheetAction: 'read_nikhil',
+  //   mentors:     ['Hire C'],
+  // },
+];
+
+// Derive the currently viewed TL from URL param ?tl=ashi (default: first)
+const _tlParam = new URLSearchParams(location.search).get('tl') || TL_CONFIG[0].id;
+const ACTIVE_TL = TL_CONFIG.find(t => t.id === _tlParam) || TL_CONFIG[0];
+const MENTORS = ACTIVE_TL.mentors;
+const MENTOR_COLS = ['chase_curr','chase_next','miss_curr','miss_next','tbd_curr','tbd_next','chats','calls'];
+const COL_NAMES = {
+  chase_curr:'Chase Deadline Current',
+  chase_next:'Chase Deadline Next',
+  miss_curr:'Missed Deadline Current',
+  miss_next:'Missed Deadline Next',
+  tbd_curr:'TBD Current',
+  tbd_next:'TBD Next',
+  chats:'Chats Reviewed',
+  calls:'Calls Taken'
+};
+const AUDIT_CATS = [
+  {id:'cat_initial',  label:'KAM Initial Process — New Initials'},
+  {id:'cat_pitches',  label:'Pitches — Unpaid'},
+  {id:'cat_pipeline', label:'Pipeline Cases — Unpaid Pipeline'},
+  {id:'cat_outpipe',  label:'Out of Pipeline'},
+  {id:'cat_partial',  label:'Partial Paid Case'},
+  {id:'cat_dead',     label:'Program Dead'},
+  {id:'cat_fullpaid', label:'Full Paid'},
+];
+const ACC_CHECKS = [
+  {id:'a_standup', label:'Team standup & training taken independently', sub:'Start-of-day plan + training — without manager'},
+  {id:'a_audit',   label:'Category-wise audit completed for today',    sub:'All reviewed chats tagged by category above'},
+];
+const RATINGS = [
+  {id:'r_initiate', col:'Mgr Rating - Initiates Convos',    label:'Initiates accountability conversations',  sub:'Opens hard conversations without being asked'},
+  {id:'r_holdline', col:'Mgr Rating - Holds Line',          label:'Holds the line under pushback',           sub:'Stays firm when a mentor deflects or makes excuses'},
+  {id:'r_datafirst',col:'Mgr Rating - Data Not Emotion',    label:'Leads with data, not emotion',            sub:'"Here\'s what I saw in the chat" — not "I feel like..."'},
+  {id:'r_specific', col:'Mgr Rating - Specific Feedback',   label:'Feedback is specific & actionable',       sub:'Not "improve" — exactly what to fix and how'},
+  {id:'r_followup', col:'Mgr Rating - Follows Up',          label:'Follows up the next day',                 sub:'Closes the loop — did the mentor act on it?'},
+];
+
+const FIXED_QS = [
+  {id:'fq1', label:'Is the pod on track for 70% this cycle?',
+   sub:'Forces a direct answer — yes or no. No vague status updates.',
+   placeholder:'Yes / No / At risk — and why…'},
+  {id:'fq2', label:'Which mentor needs the most from you this week — and what specifically are you doing about it?',
+   sub:'Tells Jyotishman if Ashi is coaching or just checking boxes.',
+   placeholder:'Name the mentor. Name the specific action…'},
+  {id:'fq3', label:'What objection pattern are you seeing most across the pod right now?',
+   sub:'Surfaces systemic issues that need co-founder strategy.',
+   placeholder:'Name the objection type, how many times this week, what you have tried…'},
+  {id:'fq4', label:'Is there anything you are stuck on that requires a decision from Jyotishman?',
+   sub:'His signal to act. Everything else stays with Ashi.',
+   placeholder:'Yes — describe it. No — state that clearly…'},
+  {id:'fq5', label:'What did you do this week that you would do differently?',
+   sub:'Tells Jyotishman how self-aware and coachable Ashi is.',
+   placeholder:'Name one specific thing — not a general reflection…'},
+];
+const WEEK_FOCUS = [
+  'Focus: <strong>Shadow & absorb.</strong> Narrate your decisions out loud. Set the standard. Watch her review chats — do not coach her, let her find the gaps herself.',
+  'Focus: <strong>Calibrate her judgment.</strong> Compare her flags to yours. She should match 70%+. Hand Aishnee\'s check-in to her — not assist, own.',
+  'Focus: <strong>Step back from the floor.</strong> Do not run standups. Do not correct mentors first. Watch if she fills the vacuum. Only intervene when genuinely stuck.',
+  'Focus: <strong>Evaluate readiness.</strong> Involve her in cabinet prep. What do the numbers say? Does she have co-founder thinking yet? Decide on TL title formalisation.',
+];
+
+let SCRIPT_URL = localStorage.getItem('ashi_script_url') || '';
+let mgrData = [];
+let ashiData = [];
+let currentWeek = 1;
+
+
+function buildTLSwitcher() {
+  if (TL_CONFIG.length < 2) return;
+  const nav = document.querySelector('.nav-section');
+  if (!nav) return;
+  const div = document.createElement('div');
+  div.className = 'nav-section';
+  div.style.marginBottom = '0.5rem';
+  div.innerHTML = `<div class="nav-label">Viewing TL</div>` +
+    TL_CONFIG.map(t =>
+      `<button class="nav-item${t.id===ACTIVE_TL.id?' active':''}"
+        onclick="switchTL('${t.id}')">
+        <div class="nav-dot"></div>${t.name}
+      </button>`
+    ).join('');
+  nav.parentNode.insertBefore(div, nav);
+}
+
+function switchTL(id) {
+  const url = new URL(location.href);
+  url.searchParams.set('tl', id);
+  location.href = url.toString();
+}
+
+
+// ─── FOLLOW-UP LOG (embedded) ──────────────────────────────────
+let trFlagsData = [];
+let trNotesData = [];
+let trFlagFilter = 'open';
+
+function showFUTab(tab, btn) {
+  document.getElementById('fu-flags-view').style.display = tab==='flags' ? 'block' : 'none';
+  document.getElementById('fu-notes-view').style.display = tab==='notes' ? 'block' : 'none';
+  ['futab-flags','futab-notes'].forEach(id => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    const active = id === 'futab-'+tab;
+    b.style.background    = active ? 'var(--navy)' : 'transparent';
+    b.style.color         = active ? '#f5f0e6'     : 'var(--text3)';
+    b.style.borderColor   = active ? 'var(--navy)' : 'var(--border2)';
+    b.style.fontWeight    = active ? '500'         : '300';
+  });
+}
+
+function trBuildSelects() {
+  ['tr-flag-tl','tr-note-tl'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select TL…</option>' +
+      TL_CONFIG.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  });
+}
+
+function trPopulateMentors() {
+  const tlId = document.getElementById('tr-note-tl')?.value;
+  const tl = TL_CONFIG.find(t => t.id === tlId);
+  const sel = document.getElementById('tr-note-mentor');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select mentor…</option>' +
+    (tl ? tl.mentors.map(m => `<option value="${m}">${m}</option>`).join('') : '');
+}
+
+async function loadFollowupTab() {
+  if (!SCRIPT_URL) return;
+  try {
+    trFlagsData = await appsGet('read_flags');
+    trNotesData = await appsGet('read_mentor_notes');
+    trRenderFlags();
+    trRenderNotes();
+    trUpdateBadge();
+  } catch(e) { console.error('loadFollowupTab:', e); }
+}
+
+function trUpdateBadge() {
+  const open = trFlagsData.filter(f => f['Status']==='Open' || f['Status']==='Ashi Responded').length
+             + trNotesData.filter(n => n['Follow-up']==='Yes' && n['Status']!=='Resolved').length;
+  const b = document.getElementById('tr-badge-fu');
+  if (b) { b.textContent = open; b.style.display = open ? 'inline-block' : 'none'; }
+}
+
+function todayISO() { return new Date().toISOString().slice(0,10); }
+
+async function trAddFlag() {
+  const tl       = document.getElementById('tr-flag-tl')?.value;
+  const what     = document.getElementById('tr-flag-what')?.value.trim();
+  const comment  = document.getElementById('tr-flag-comment')?.value.trim();
+  const assigned = document.getElementById('tr-flag-assigned')?.value;
+  const entryDate= document.getElementById('tr-flag-date')?.value;
+  const due      = document.getElementById('tr-flag-due')?.value;
+  const statusEl = document.getElementById('tr-flag-status');
+
+  if (!tl || !what || !comment) { if(statusEl) { statusEl.textContent='Fill TL, what you saw, and comment.'; statusEl.style.color='var(--red)'; } return; }
+  const row = { 'ID':Date.now().toString(),'Created':todayISO(),'TL':tl,'Entry Date':entryDate,'What':what,'Comment':comment,'Assigned To':assigned,'Due Date':due,'Status':'Open','Ashi Response':'','Resolved Date':'' };
+  if(statusEl) { statusEl.textContent='Saving…'; statusEl.style.color='var(--text3)'; }
+  try {
+    await appsPost('write_flag', row);
+    trFlagsData.push(row);
+    if(statusEl) { statusEl.textContent='Saved ✓'; statusEl.style.color='var(--green)'; setTimeout(()=>{ if(statusEl) statusEl.textContent=''; },3000); }
+    ['tr-flag-tl','tr-flag-date','tr-flag-what','tr-flag-comment','tr-flag-due'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('tr-flag-date').value = todayISO();
+    trRenderFlags(); trUpdateBadge();
+  } catch(e) { console.error(e); if(statusEl){statusEl.textContent='Save failed';statusEl.style.color='var(--red)';} }
+}
+
+async function trAddNote() {
+  const tl      = document.getElementById('tr-note-tl')?.value;
+  const mentor  = document.getElementById('tr-note-mentor')?.value;
+  const text    = document.getElementById('tr-note-text')?.value.trim();
+  const followup= document.getElementById('tr-note-followup')?.value;
+  const due     = document.getElementById('tr-note-due')?.value;
+  const statusEl= document.getElementById('tr-note-status');
+
+  if (!tl || !mentor || !text) { if(statusEl){statusEl.textContent='Fill TL, mentor, and note.';statusEl.style.color='var(--red)';} return; }
+  const row = { 'ID':Date.now().toString(),'Created':todayISO(),'TL':tl,'Mentor':mentor,'Note':text,'Follow-up':followup,'Due Date':due,'Status':followup==='Yes'?'Open':'Observation' };
+  if(statusEl){statusEl.textContent='Saving…';statusEl.style.color='var(--text3)';}
+  try {
+    await appsPost('write_mentor_note', row);
+    trNotesData.push(row);
+    if(statusEl){statusEl.textContent='Saved ✓';statusEl.style.color='var(--green)';setTimeout(()=>{if(statusEl)statusEl.textContent='';},3000);}
+    ['tr-note-tl','tr-note-mentor','tr-note-text','tr-note-due'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    trRenderNotes(); trUpdateBadge();
+  } catch(e) { console.error(e); if(statusEl){statusEl.textContent='Save failed';statusEl.style.color='var(--red)';} }
+}
+
+async function trResolveFlag(id) {
+  const flag = trFlagsData.find(f => f['ID']===id);
+  if (!flag) return;
+  flag['Status']='Resolved'; flag['Resolved Date']=todayISO();
+  try { await appsPost('write_flag', flag); trRenderFlags(); trUpdateBadge(); } catch(e){console.error(e);}
+}
+
+async function trResolveNote(id) {
+  const note = trNotesData.find(n => n['ID']===id);
+  if (!note) return;
+  note['Status']='Resolved';
+  try { await appsPost('write_mentor_note', note); trRenderNotes(); trUpdateBadge(); } catch(e){console.error(e);}
+}
+
+function trFilterFlags(f, btn) {
+  trFlagFilter = f;
+  document.querySelectorAll('#tr-flag-filters .wtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  trRenderFlags();
+}
+
+function trRenderFlags() {
+  const list = document.getElementById('tr-flags-list');
+  if (!list) return;
+  const today = todayISO();
+  const tlName = id => TL_CONFIG.find(t=>t.id===id)?.name||id;
+  let items = [...trFlagsData].reverse();
+  if (trFlagFilter==='open')      items=items.filter(f=>f['Status']==='Open');
+  else if (trFlagFilter==='ashi') items=items.filter(f=>['Ashi','Both'].includes(f['Assigned To'])&&f['Status']!=='Resolved');
+  else if (trFlagFilter==='responded') items=items.filter(f=>f['Status']==='Ashi Responded');
+  else if (trFlagFilter==='resolved')  items=items.filter(f=>f['Status']==='Resolved');
+
+  if (!items.length) { list.innerHTML='<div style="color:var(--text3);font-size:13px;font-style:italic;padding:2rem 0;text-align:center">No items in this filter.</div>'; return; }
+
+  list.innerHTML = items.map(f => {
+    const overdue   = f['Due Date']&&f['Due Date']<today&&f['Status']!=='Resolved';
+    const resolved  = f['Status']==='Resolved';
+    const responded = f['Status']==='Ashi Responded';
+    const aColor    = f['Assigned To']==='Ashi'?'var(--amber)':f['Assigned To']==='Both'?'#5a2d8a':'var(--blue)';
+    const sColor    = resolved?'var(--green)':responded?'var(--blue)':overdue?'var(--red)':'var(--gold)';
+    const sLabel    = resolved?'Resolved':responded?'Ashi Responded':overdue?'Overdue':'Open';
+    return `<div style="background:var(--surface);border:1px solid ${overdue?'rgba(122,31,31,.25)':'var(--border)'};border-left:3px solid ${sColor};border-radius:12px;padding:14px 18px;margin-bottom:10px;opacity:${resolved?'.6':'1'}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;font-size:11px;color:var(--text3)">
+        <span style="font-weight:600;color:var(--navy);font-size:12px">${tlName(f['TL'])}</span>
+        ${f['Entry Date']?`<span>re: ${f['Entry Date']}</span>`:''}
+        <span style="color:${aColor};font-weight:600">→ ${f['Assigned To']}</span>
+        <span style="color:${sColor};font-weight:600">${sLabel}</span>
+        <span style="margin-left:auto">${f['Created']}</span>
+      </div>
+      <div style="font-size:13px;color:#0e1530;font-weight:500;margin-bottom:3px">${f['What']}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:6px">${f['Comment']}</div>
+      ${f['Due Date']?`<div style="font-size:11px;color:${overdue?'var(--red)':'var(--text3)'};margin-bottom:8px">Due: ${f['Due Date']}</div>`:''}
+      ${responded&&f['Ashi Response']?`<div style="background:var(--green-bg);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-style:italic;margin-bottom:8px">Ashi's response: ${f['Ashi Response']}</div>`:''}
+      ${!resolved?`<button onclick="trResolveFlag('${f['ID']}')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border2);font-size:11px;color:var(--text3);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:all .12s" onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--green)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">Mark resolved</button>`
+        :`<span style="font-size:11px;color:var(--green)">✓ Resolved ${f['Resolved Date']||''}</span>`}
+    </div>`;
+  }).join('');
+}
+
+function trRenderNotes() {
+  const list = document.getElementById('tr-notes-list');
+  if (!list) return;
+  const today = todayISO();
+  const tlName = id => TL_CONFIG.find(t=>t.id===id)?.name||id;
+  const items = [...trNotesData].reverse();
+  if (!items.length) { list.innerHTML='<div style="color:var(--text3);font-size:13px;font-style:italic;padding:2rem 0;text-align:center">No mentor notes yet.</div>'; return; }
+  list.innerHTML = items.map(n => {
+    const needsFU  = n['Follow-up']==='Yes' && n['Status']!=='Resolved';
+    const overdue  = needsFU && n['Due Date'] && n['Due Date']<today;
+    const resolved = n['Status']==='Resolved';
+    return `<div style="background:var(--surface);border:1px solid ${overdue?'rgba(122,31,31,.25)':'var(--border)'};border-left:3px solid ${overdue?'var(--red)':needsFU?'var(--gold)':'var(--border)'};border-radius:12px;padding:14px 18px;margin-bottom:10px;opacity:${resolved?'.55':'1'}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;font-size:11px;color:var(--text3)">
+        <span style="font-weight:600;color:var(--navy);font-size:12px">${tlName(n['TL'])}</span>
+        <span style="font-weight:500;color:var(--text2)">${n['Mentor']}</span>
+        ${needsFU?`<span style="color:${overdue?'var(--red)':'var(--amber)'};font-weight:600">${overdue?'Follow-up overdue':'Follow-up needed'}</span>`
+          :`<span style="color:var(--text3)">Observation</span>`}
+        <span style="margin-left:auto">${n['Created']}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:6px">${n['Note']}</div>
+      ${n['Due Date']&&needsFU?`<div style="font-size:11px;color:${overdue?'var(--red)':'var(--text3)'};margin-bottom:8px">Follow-up by: ${n['Due Date']}</div>`:''}
+      ${needsFU?`<button onclick="trResolveNote('${n['ID']}')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border2);font-size:11px;color:var(--text3);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif" onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--green)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">Mark resolved</button>`
+        : resolved?`<span style="font-size:11px;color:var(--green)">✓ Resolved</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ─── SETUP ────────────────────────────────────────────────────
+function checkSetup() {
+  if (!SCRIPT_URL) document.getElementById('setup-banner').style.display = 'block';
+}
+function saveScriptUrl() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    alert('Paste a valid Apps Script deployment URL (starts with https://script.google.com).');
+    return;
+  }
+  SCRIPT_URL = url;
+  localStorage.setItem('ashi_script_url', url);
+  document.getElementById('setup-banner').style.display = 'none';
+  document.getElementById('loading-overlay').style.display = 'flex';
+  loadAll();
+}
+
+// ─── SYNC ─────────────────────────────────────────────────────
+function setSyncState(s, label) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + s;
+  document.getElementById('sync-label').textContent = label;
+}
+function setStatus(msg, cls) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg; el.className = 'status-msg ' + (cls||'');
+}
+async function appsGet(action) {
+  const r = await fetch(`${SCRIPT_URL}?action=${action}`);
+  if (!r.ok) throw new Error('GET ' + r.status);
+  return r.json();
+}
+async function appsPost(action, row) {
+  const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({action, row}) });
+  if (!r.ok) throw new Error('POST ' + r.status);
+  return r.json();
+}
+async function loadAll() {
+  if (!SCRIPT_URL) { document.getElementById('loading-overlay').style.display = 'none'; return; }
+  setSyncState('syncing','Loading…');
+  try {
+    mgrData = await appsGet('read_manager');
+    document.getElementById('loading-text').textContent = 'Loading Ashi\'s entries…';
+    ashiData = await appsGet(ACTIVE_TL.sheetAction);
+    setSyncState('synced','Synced');
+  } catch(e) {
+    console.error(e); setSyncState('error','Load failed');
+    mgrData = []; ashiData = [];
+  }
+  document.getElementById('loading-overlay').style.display = 'none';
+  loadDay();
+}
+
+// ─── UTILS ────────────────────────────────────────────────────
+function today() { return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function todayKey() { return new Date().toISOString().slice(0,10); }
+function todayRow() { return mgrData.find(r => r['Date'] === todayKey()) || {}; }
+
+// ─── NAVIGATION ───────────────────────────────────────────────
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  btn.classList.add('active');
+  if (page==='analysis') buildAnalysis();
+  if (page==='history') buildHistory();
+  if (page==='followup') { trBuildSelects(); trPopulateMentors(); loadFollowupTab(); }
+}
+function setWeek(w, el) {
+  document.querySelectorAll('.wpill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  currentWeek = w;
+  document.querySelectorAll('.wtab').forEach((t,i) => t.classList.toggle('active', i+1===w));
+  document.getElementById('week-focus-box').innerHTML = WEEK_FOCUS[w-1];
+  loadDay();
+}
+function switchWeek(w, el) {
+  document.querySelectorAll('.wtab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.wpill').forEach((p,i) => p.classList.toggle('active', i+1===w));
+  currentWeek = w;
+  document.getElementById('week-focus-box').innerHTML = WEEK_FOCUS[w-1];
+  loadDay();
+}
+
+// ─── BUILD UI ─────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+// ─── LEAVE HANDLING ───────────────────────────────────────────
+
+
+
+
+
+
+function buildHistory() {
+  const list = document.getElementById('history-list');
+  if (!mgrData.length) { list.innerHTML='<div class="empty-state">No days logged yet.</div>'; return; }
+  list.innerHTML = [...mgrData].reverse().map(d => {
+    const avgR = RATINGS.reduce((a,r) => a+(parseFloat(d[r.col])||0),0)/RATINGS.length;
+    const tc   = MENTORS.reduce((a,m) => a+(parseFloat(d[`Chats Reviewed - ${m}`])||0),0);
+    const tca  = MENTORS.reduce((a,m) => a+(parseFloat(d[`Calls Taken - ${m}`])||0),0);
+    const fbN  = MENTORS.filter(m => d[`Feedback Given - ${m}`]==='y').length;
+    const dateStr = new Date(d['Date']).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+    return `<div class="history-item">
+      <div class="h-date">${dateStr}<div class="h-week">W${d['Week']||'?'}</div></div>
+      <div class="h-content">
+        <div class="h-metrics">
+          <div class="h-metric">Chats <span>${tc}</span></div>
+          <div class="h-metric">Calls <span>${tca}</span></div>
+          <div class="h-metric">Feedback <span>${fbN} mentors</span></div>
+        </div>
+        <div class="h-stars">${[1,2,3,4].map(v=>`<div class="hstar${avgR>=v?' lit':''}"></div>`).join('')}
+          <span style="font-size:11px;color:var(--text3);margin-left:6px">comm avg ${avgR.toFixed(1)}/4</span>
+        </div>
+        ${d['Manager Notes']?`<div class="h-note">"${d['Manager Notes'].slice(0,160)}${d['Manager Notes'].length>160?'…':''}"</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── ANALYSIS ─────────────────────────────────────────────────
+function buildAnalysis() {
+  const n = mgrData.length;
+  const tc    = mgrData.reduce((a,d) => a+MENTORS.reduce((x,m)=>x+(parseFloat(d[`Chats Reviewed - ${m}`])||0),0),0);
+  const tca   = mgrData.reduce((a,d) => a+MENTORS.reduce((x,m)=>x+(parseFloat(d[`Calls Taken - ${m}`])||0),0),0);
+  const ttbd  = mgrData.reduce((a,d) => a+MENTORS.reduce((x,m)=>x+(parseFloat(d[`TBD - ${m}`])||0),0),0);
+  const avgC  = n ? mgrData.reduce((a,d)=>a+RATINGS.reduce((x,r)=>x+(parseFloat(d[r.col])||0),0)/RATINGS.length,0)/n : 0;
+  const auditR= n ? Math.round(mgrData.reduce((a,d)=>a+MENTORS.filter(m=>d[`Audit Sheet Done - ${m}`]==='y').length,0)/(n*MENTORS.length)*100) : 0;
+  const dpR   = n ? Math.round(mgrData.reduce((a,d)=>a+MENTORS.filter(m=>d[`Day Plan Done - ${m}`]==='y').length,0)/(n*MENTORS.length)*100) : 0;
+
+  document.getElementById('sum-grid').innerHTML = `
+    <div class="scard"><div class="scard-val">${n}</div><div class="scard-label">Days logged</div></div>
+    <div class="scard"><div class="scard-val">${tc}</div><div class="scard-label">Chats reviewed</div></div>
+    <div class="scard"><div class="scard-val">${tca}</div><div class="scard-label">Calls taken</div></div>
+    <div class="scard"><div class="scard-val">${ttbd}</div><div class="scard-label">TBD students</div></div>
+    <div class="scard"><div class="scard-val">${auditR}%</div><div class="scard-label">Audit sheet rate</div></div>
+  `;
+
+  const dims = [
+    {label:'Self audit sheet discipline',   color:'#f0b860', val:auditR},
+    {label:'Day plan sheet discipline',      color:'#e8c880', val:dpR},
+    {label:'Direct feedback consistency',   color:'#52c97a', val: n?Math.round(mgrData.filter(d=>MENTORS.filter(m=>d[`Feedback Given - ${m}`]==='y').length>=2).length/n*100):0},
+    {label:'Communication quality',         color:'#5aa0e8', val: n?Math.round(avgC/4*100):0},
+    {label:'Confrontation confidence',      color:'#f06a6a', val: n?Math.round(mgrData.reduce((a,d)=>a+((parseFloat(d['Mgr Rating - Initiates Convos'])||0)+(parseFloat(d['Mgr Rating - Holds Line'])||0))/2,0)/(n*4)*100):0},
+    {label:'Standup & audit discipline',    color:'#c8a060', val: n?Math.round(mgrData.filter(d=>d['Standup Done']==='y'&&d['Audit Done']==='y').length/n*100):0},
+  ];
+
+  document.getElementById('sc-list').innerHTML = dims.map(d => {
+    const badge = d.val>=70?'<span class="badge badge-good">strong</span>':d.val>=45?'<span class="badge badge-mid">developing</span>':'<span class="badge badge-low">needs work</span>';
+    return `<div class="score-row"><div class="score-label">${d.label}</div><div class="score-bar"><div class="score-fill" style="width:${d.val}%;background:${d.color}"></div></div><div class="score-pct">${d.val}%</div>${badge}</div>`;
+  }).join('');
+
+  document.getElementById('comm-breakdown').innerHTML = RATINGS.map(r => {
+    const avg = n ? mgrData.reduce((a,d)=>a+(parseFloat(d[r.col])||0),0)/n : 0;
+    const pct = Math.round(avg/4*100);
+    return `<div class="score-row"><div class="score-label" style="font-size:12px">${r.label}</div><div class="score-bar"><div class="score-fill" style="width:${pct}%;background:#5aa0e8"></div></div><div class="score-pct">${avg.toFixed(1)}</div></div>`;
+  }).join('');
+
+  const overall = n ? dims.reduce((a,d)=>a+d.val,0)/dims.length : 0;
+  let verdict, vcolor;
+  if (!n) { verdict='Log at least a few days to generate a verdict.'; vcolor=''; }
+  else if (overall>=70) { verdict='Ashi is showing strong TL readiness. Sheet discipline is consistent, direct feedback is reaching mentors daily, and confrontation confidence is building. The data supports formalising the TL role.'; vcolor='badge-good'; }
+  else if (overall>=45) { verdict='Developing well but feedback consistency and confrontation confidence need more work. The system is there — follow-through needs tightening. Revisit in two weeks.'; vcolor='badge-mid'; }
+  else { verdict='Needs more deliberate practice. Direct feedback and accountability follow-through are inconsistent. Increase role-play frequency and ensure she owns at least one live confrontation scenario each week.'; vcolor='badge-low'; }
+
+  document.getElementById('verdict-head').innerHTML = `Readiness verdict${n>0?' <span class="badge '+vcolor+'">'+(overall>=70?'ready':overall>=45?'developing':'not yet')+'</span>':''}`;
+  document.getElementById('verdict-text').textContent = verdict;
+
+  buildSVM();
+  buildAshiEntries();
+}
+
+function buildSVM() {
+  const section = document.getElementById('svm-section');
+  const an = ashiData.length;
+  if (!an) { section.style.display='none'; return; }
+  section.style.display = 'block';
+
+  const ashiRCols = ['Rating - Initiates Convos','Rating - Holds Line','Rating - Data Not Emotion','Rating - Specific Feedback','Rating - Follows Up'];
+  const n = mgrData.length;
+
+  const auditPct = Math.round(ashiData.filter(r=>r['Self Audit Sheet - Sarvagya']==='y'||r['Self Audit Sheet - Sarvagya']==='Yes').length/an*100);
+  const standupPct = Math.round(ashiData.filter(r=>r['Standup & Training Done']==='y'||r['Standup & Training Done']==='Yes').length/an*100);
+
+  document.getElementById('svm-summary').innerHTML = `
+    <div class="scard"><div class="scard-val">${an}</div><div class="scard-label">Ashi's entries</div></div>
+    <div class="scard"><div class="scard-val">${auditPct}%</div><div class="scard-label">Audit sheet (her)</div></div>
+    <div class="scard"><div class="scard-val">${standupPct}%</div><div class="scard-label">Standup done (her)</div></div>
+  `;
+
+  document.getElementById('svm-ratings').innerHTML = RATINGS.map((r,i) => {
+    const ashiAvg = an ? ashiData.reduce((a,d)=>a+(parseFloat(d[ashiRCols[i]])||0),0)/an : 0;
+    const mgrAvg  = n  ? mgrData.reduce((a,d)=>a+(parseFloat(d[r.col])||0),0)/n : 0;
+    const ap = Math.round(ashiAvg/4*100), mp = Math.round(mgrAvg/4*100);
+    const gap = mp - ap;
+    const gapLabel = gap>15?'<span class="badge badge-low">overestimates</span>':gap<-15?'<span class="badge badge-mid">underestimates</span>':'<span class="badge badge-good">aligned</span>';
+    return `<div class="svmrow">
+      <div class="svmrow-head"><div class="svmrow-label">${r.label}</div>${gapLabel}</div>
+      <div class="svm-bar-row"><div class="svm-who">Ashi</div><div class="score-bar"><div class="score-fill" style="width:${ap}%;background:var(--accent)"></div></div><span style="font-size:12px;color:var(--text);width:28px;text-align:right">${ashiAvg.toFixed(1)}</span></div>
+      <div class="svm-bar-row"><div class="svm-who">You</div><div class="score-bar"><div class="score-fill" style="width:${mp}%;background:#5aa0e8"></div></div><span style="font-size:12px;color:var(--text);width:28px;text-align:right">${mgrAvg.toFixed(1)}</span></div>
+    </div>`;
+  }).join('');
+
+  const recent = ashiData.slice(-3).reverse();
+  document.getElementById('svm-reflections').innerHTML = recent.length ? `
+    <div class="sec-head" style="margin-top:1.5rem">Ashi's recent reflections</div>
+    ${recent.map(r=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--accent);margin-bottom:6px">${r['Date']}</div>
+      ${r['Reflection - Did Well']?`<div style="font-size:12px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3)">Did well: </span>${r['Reflection - Did Well']}</div>`:''}
+      ${r['Reflection - Was Hard']?`<div style="font-size:12px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3)">Hard: </span>${r['Reflection - Was Hard']}</div>`:''}
+      ${r['Reflection - Tomorrow Focus']?`<div style="font-size:12px;color:var(--text2)"><span style="color:var(--text3)">Tomorrow: </span>${r['Reflection - Tomorrow Focus']}</div>`:''}
+    </div>`).join('')}` : '';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+function showAnalysisTab(tab, btn) {
+  document.getElementById('analysis-scorecard-view').style.display = tab === 'scorecard' ? 'block' : 'none';
+  document.getElementById('ashi-entries-section').style.display = tab === 'ashilog' ? 'block' : 'none';
+  ['atab-scorecard','atab-ashilog'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) {
+      const active = id === 'atab-'+tab;
+      b.style.background = active ? 'var(--navy)' : 'transparent';
+      b.style.color = active ? '#f5f0e6' : 'var(--text3)';
+      b.style.borderColor = active ? 'var(--navy)' : 'var(--border2)';
+    }
+  });
+}
+
+function buildAshiEntries() {
+  const section = document.getElementById('ashi-entries-section');
+  if (!ashiData || !ashiData.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const ML  = ['Sarvagya','Nikhil','Stuti','Aishnee','Anushka'];
+  const AUD = [
+    {id:'cat_initial',  label:'New Initials'},
+    {id:'cat_pitches',  label:'Pitches — Unpaid'},
+    {id:'cat_pipeline', label:'Pipeline — Unpaid'},
+    {id:'cat_outpipe',  label:'Out of Pipeline'},
+    {id:'cat_partial',  label:'Partial Paid'},
+    {id:'cat_dead',     label:'Program Dead'},
+    {id:'cat_fullpaid', label:'Full Paid'},
+  ];
+  const RCOLS = [
+    {col:'Rating - Initiates Convos',    label:'Initiates accountability'},
+    {col:'Rating - Holds Line',          label:'Holds the line'},
+    {col:'Rating - Data Not Emotion',    label:'Data not emotion'},
+    {col:'Rating - Specific Feedback',   label:'Specific feedback'},
+    {col:'Rating - Follows Up',          label:'Follows up next day'},
+  ];
+
+  // Helpers
+  const sec = (title, color) =>
+    `<div style="font-size:10px;color:${color||'var(--gold)'};text-transform:uppercase;letter-spacing:.10em;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(184,134,11,0.14);">${title}</div>`;
+  const chip = (label, color, bg) =>
+    `<span style="display:inline-block;font-size:10px;padding:2px 9px;border-radius:20px;font-weight:500;background:${bg};color:${color};border:1px solid ${color}22;">${label}</span>`;
+  const yn = (v) => v==='y'
+    ? `<span style="color:var(--green);font-weight:600;font-size:13px">✓</span>`
+    : v==='n'
+    ? `<span style="color:var(--red);font-weight:600;font-size:13px">✗</span>`
+    : `<span style="color:var(--text3);font-size:13px">—</span>`;
+
+  document.getElementById('ashi-entries-list').innerHTML = [...ashiData].reverse().map(d => {
+    const dateStr = new Date(d['Date']).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const ashiOnLeave = d['Ashi On Leave'] === 'y';
+
+    // ── OUTPUT TABLE — always show numbers, just badge absent mentors ──
+    const outputRows = ML.map(m => {
+      const onLeave = d['Leave - '+m] === 'y';
+      const rowStyle = onLeave ? 'opacity:.55;background:#fffdf9;' : '';
+      const leaveBadge = onLeave ? ` <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:var(--amber-bg);color:var(--amber);font-weight:600;border:1px solid rgba(184,134,11,0.2)">On leave</span>` : '';
+      const num = (col) => {
+        const v = d[col+' - '+m];
+        return `<td style="padding:8px 10px;font-size:12px;color:${v&&v!='0'?'var(--navy)':'var(--text3)'};text-align:center">${v||'—'}</td>`;
+      };
+      return `<tr style="${rowStyle}">
+        <td style="padding:8px 10px;font-size:12px;color:var(--navy);font-weight:500">${m}${leaveBadge}</td>
+        ${num('Chase Deadline Current')}${num('Chase Deadline Next')}
+        ${num('Missed Deadline Current')}${num('Missed Deadline Next')}
+        <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${d['TBD Current - '+m]||'—'}</td>
+        <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${d['TBD Next - '+m]||'—'}</td>
+        ${num('Chats Reviewed')}${num('Calls Taken')}
+      </tr>`;
+    }).join('');
+
+    // ── SHEETS — only show non-absent mentors ──
+    const sheetRows = ML.map(m => {
+      if (d['Leave - '+m] === 'y') return '';   // skip — on leave, not applicable
+      const a = d['Self Audit Sheet - '+m];
+      const dp = d['Day Plan Sheet - '+m];
+      return `<tr>
+        <td style="padding:7px 10px;font-size:12px;color:var(--navy)">${m}</td>
+        <td style="padding:7px 10px;text-align:center">${yn(a)}</td>
+        <td style="padding:7px 10px;text-align:center">${yn(dp)}</td>
+      </tr>`;
+    }).filter(Boolean).join('') || `<tr><td colspan="3" style="padding:10px;color:var(--text3);font-size:12px;font-style:italic">All mentors on leave today</td></tr>`;
+
+    // ── FEEDBACK ──
+    const fb1 = d['Feedback To (1)']||'', fn1 = d['Feedback Notes (1)']||'';
+    const fb2 = d['Feedback To (2)']||'', fn2 = d['Feedback Notes (2)']||'';
+    const fbItems = [fb1&&`<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)"><div style="font-size:11px;color:var(--navy);font-weight:600;margin-bottom:3px">${fb1}</div><div style="font-size:12px;color:var(--text2);line-height:1.5">${fn1||'—'}</div></div>`,
+                     fb2&&`<div><div style="font-size:11px;color:var(--navy);font-weight:600;margin-bottom:3px">${fb2}</div><div style="font-size:12px;color:var(--text2);line-height:1.5">${fn2||'—'}</div></div>`]
+      .filter(Boolean).join('') || `<span style="font-size:12px;color:var(--text3)">None recorded</span>`;
+
+    // ── AUDIT ──
+    const auditItems = AUD.filter(c => parseInt(d['Audit Count - '+c.id]) > 0).map(c => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="min-width:140px;font-size:12px;color:var(--text2)">${c.label}</div>
+        <div style="width:30px;font-size:13px;font-weight:600;color:var(--navy);flex-shrink:0">${d['Audit Count - '+c.id]}</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.5">${d['Audit Notes - '+c.id]||''}</div>
+      </div>`).join('') || `<div style="font-size:12px;color:var(--text3);font-style:italic">None recorded</div>`;
+
+    // ── RATINGS ──
+    const ratingsHtml = RCOLS.map(r => {
+      const val = parseInt(d[r.col])||0;
+      const bars = [1,2,3,4].map(v => {
+        const filled = v <= val;
+        return `<span style="display:inline-block;width:28px;height:28px;border-radius:7px;border:1px solid ${filled?'var(--gold)':'var(--border)'};background:${filled?'var(--gold-bg)':'var(--surface2)'};text-align:center;line-height:28px;font-size:11px;font-weight:${filled?'600':'400'};color:${filled?'var(--gold)':'var(--text3)'}">${v}</span>`;
+      }).join('');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text2);min-width:160px;flex:1">${r.label}</div>
+        <div style="display:flex;gap:4px">${bars}</div>
+        <div style="font-size:12px;font-weight:600;color:${val>=3?'var(--green)':val>=2?'var(--amber)':'var(--red)'};width:20px;text-align:center">${val||'—'}</div>
+      </div>`;
+    }).join('');
+
+    // ── REFLECTIONS ──
+    const reflCards = [
+      {label:'What I did well',      key:'Reflection - Did Well',      color:'var(--green)', bg:'var(--green-bg)'},
+      {label:'Where I held back',    key:'Reflection - Was Hard',       color:'var(--red)',   bg:'var(--red-bg)'},
+      {label:"Tomorrow's focus",     key:'Reflection - Tomorrow Focus', color:'var(--blue)',  bg:'var(--blue-bg)'},
+    ].filter(r => d[r.key]).map(r => `
+      <div style="background:${r.bg};border:1px solid ${r.color}22;border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;color:${r.color};text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">${r.label}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.75;white-space:pre-wrap">${d[r.key]}</div>
+      </div>`).join('');
+
+    const standupDone = d['Standup & Training Done'] === 'y';
+    const leaveList = ML.filter(m => d['Leave - '+m] === 'y');
+
+    // ── CARD ──
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 3px 16px rgba(0,0,0,0.07);">
+
+      <!-- Card header -->
+      <div style="background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <span style="font-family:'DM Serif Display',serif;font-size:18px;color:#f5f0e6">${dateStr}</span>
+          <span style="font-size:11px;color:rgba(245,240,230,0.5);margin-left:10px">Week ${d['Week']||'?'}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${ashiOnLeave ? chip('Ashi on leave','#f06a6a','rgba(240,106,106,0.15)') : ''}
+          ${leaveList.length && !ashiOnLeave ? chip(leaveList.join(', ')+' on leave','#e8a838','rgba(232,168,56,0.15)') : ''}
+          ${!ashiOnLeave ? chip('Week '+d['Week'],'#e8c96a','rgba(232,201,106,0.15)') : ''}
+        </div>
+      </div>
+
+      ${ashiOnLeave ? `
+      <div style="padding:24px 20px;color:var(--text3);font-size:13px;font-style:italic;text-align:center">
+        Ashi was on leave this day — entry not counted in scoring.
+      </div>` : `
+
+      <div style="padding:20px">
+
+        <!-- Output numbers -->
+        <div style="margin-bottom:1.5rem">
+          ${sec('Output numbers — all mentors (absent mentors shown with badge)')}
+          <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border)">
+            <table style="width:100%;border-collapse:collapse;min-width:600px">
+              <thead><tr style="background:var(--surface2)">
+                ${['Mentor','Chase Curr','Chase Next','Miss Curr','Miss Next','TBD Curr','TBD Next','Chats','Calls']
+                  .map((h,i) => `<th style="font-size:10px;color:${i>=5&&i<=6?'var(--amber)':'var(--text3)'};text-transform:uppercase;padding:9px 10px;text-align:${i>0?'center':'left'};font-weight:600;white-space:nowrap">${h}</th>`).join('')}
+              </tr></thead>
+              <tbody>${outputRows}</tbody>
+              <tfoot>
+                <tr style="background:var(--surface2);font-weight:600">
+                  <td style="padding:8px 10px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Total</td>
+                  ${['Chase Deadline Current','Chase Deadline Next','Missed Deadline Current','Missed Deadline Next'].map(col => {
+                    const t = ML.reduce((a,m) => a + (parseFloat(d[col+' - '+m])||0), 0);
+                    return `<td style="padding:8px 10px;font-size:12px;color:var(--navy);text-align:center">${t||'—'}</td>`;
+                  }).join('')}
+                  <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${ML.reduce((a,m)=>a+(parseFloat(d['TBD Current - '+m])||0),0)||'—'}</td>
+                  <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${ML.reduce((a,m)=>a+(parseFloat(d['TBD Next - '+m])||0),0)||'—'}</td>
+                  <td style="padding:8px 10px;font-size:12px;color:var(--navy);text-align:center">${ML.reduce((a,m)=>a+(parseFloat(d['Chats Reviewed - '+m])||0),0)||'—'}</td>
+                  <td style="padding:8px 10px;font-size:12px;color:var(--navy);text-align:center">${ML.reduce((a,m)=>a+(parseFloat(d['Calls Taken - '+m])||0),0)||'—'}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Three column section -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+
+          <!-- Daily sheets -->
+          <div>
+            ${sec('Daily sheets — present mentors only')}
+            <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+              <table style="width:100%;border-collapse:collapse">
+                <thead><tr style="background:var(--surface2)">
+                  <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:600">Mentor</th>
+                  <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:center;font-weight:600">Audit</th>
+                  <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:center;font-weight:600">Day Plan</th>
+                </tr></thead>
+                <tbody>${sheetRows}</tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Feedback + standup -->
+          <div>
+            ${sec('Direct feedback given')}
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">${fbItems}</div>
+            ${sec('Accountability')}
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="font-size:12px;color:var(--text2)">Standup & training:</span>
+              ${standupDone
+                ? `<span style="font-size:12px;font-weight:600;color:var(--green);background:var(--green-bg);padding:3px 10px;border-radius:20px">✓ Done</span>`
+                : `<span style="font-size:12px;font-weight:600;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">✗ Not done</span>`}
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit -->
+        <div style="margin-bottom:1.5rem">
+          ${sec('Audit — category-wise')}
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px 14px">${auditItems}</div>
+        </div>
+
+        <!-- Ratings -->
+        <div style="margin-bottom:1.5rem">
+      
+    \${sec('Conversion pulse — mentor by mentor')}
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
+      <table style="width:100%;border-collapse:collapse;background:var(--surface)">
+        <thead><tr style="background:var(--surface2)">
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:left;font-weight:700">Mentor</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:center;font-weight:700">Conversion to date</th>
+          <th style="font-size:10px;color:var(--green);text-transform:uppercase;padding:9px 12px;text-align:center;font-weight:700;background:var(--green-bg)">On pace for 70%?</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:left;font-weight:700">Recovery plan</th>
+        </tr></thead>
+        <tbody>\${ML.map(m => {
+          const pct   = parseFloat(d['Conv Pct - '+m]) || 0;
+          const pace  = d['Conv Pace - '+m] || '';
+          const plan  = d['Conv Plan - '+m] || '';
+          const pctColor = pct>=70?'var(--green)':pct>0?'var(--red)':'var(--text3)';
+          const paceBadge = pace==='y'
+            ? '<span style="color:var(--green);font-weight:600">✓ Yes</span>'
+            : pace==='n'
+            ? '<span style="color:var(--red);font-weight:600">✗ No</span>'
+            : '<span style="color:var(--text3)">—</span>';
+          return \`<tr>
+            <td style="padding:9px 12px;font-size:12px;font-weight:500;color:var(--navy)">\${m}</td>
+            <td style="padding:9px 12px;text-align:center;font-size:13px;font-weight:600;color:\${pctColor}">\${pct>0?pct+'%':'—'}</td>
+            <td style="padding:9px 12px;text-align:center;background:\${pace==='y'?'var(--green-bg)':pace==='n'?'var(--red-bg)':'transparent'}">\${paceBadge}</td>
+            <td style="padding:9px 12px;font-size:12px;color:\${plan?'var(--text2)':'var(--text3)'};font-style:\${plan?'normal':'italic'}">\${plan||'—'}</td>
+          </tr>\`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+
+    ${sec('Self-ratings')}
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px 14px">${ratingsHtml}</div>
+        </div>
+
+        <!-- Reflections -->
+        ${reflCards ? `<div>
+          ${sec('Daily reflections')}
+          <div style="display:flex;flex-direction:column;gap:10px">${reflCards}</div>
+        </div>` : ''}
+
+      </div>`}
+
+    </div>`;
+  }).join('');
+}
+
+
+function loadDay() {
+  const d = ashiData.find(r => r['Date'] === todayKey()) || null;
+  renderTodayView(d);
+}
+
+function renderTodayView(d) {
+  const el = document.getElementById('today-view');
+  if (!d) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;font-style:italic;padding:2.5rem 0;text-align:center">Ashi has not submitted today's log yet. Check back later.</div>`;
+    return;
+  }
+
+  const ML = MENTORS;
+  const yn = v => v==='y'
+    ? `<span style="color:var(--green);font-weight:600">✓ Yes</span>`
+    : v==='n' ? `<span style="color:var(--red);font-weight:600">✗ No</span>`
+    : `<span style="color:var(--text3)">—</span>`;
+
+  const num = (v, color) => {
+    const val = v || '—';
+    return `<td style="padding:8px 10px;font-size:12px;color:${v&&v!='0'?(color||'var(--navy)'):'var(--text3)'};text-align:center">${val}</td>`;
+  };
+
+  const sec = t => `<div style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin:1.5rem 0 0.75rem;padding-bottom:7px;border-bottom:1px solid rgba(184,134,11,0.18)">${t}</div>`;
+
+  // Output table
+  const outRows = ML.map(m => {
+    const leave = d['Leave - '+m] === 'y';
+    return `<tr style="${leave?'opacity:.45':''}">
+      <td style="padding:8px 10px;font-size:12px;font-weight:500;color:var(--navy)">${m}${leave?' <span style="font-size:9px;padding:1px 7px;border-radius:10px;background:var(--amber-bg);color:var(--amber);font-weight:600">On leave</span>':''}</td>
+      ${num(d['Chase Deadline Current - '+m])}
+      ${num(d['Chase Deadline Next - '+m])}
+      ${num(d['Missed Deadline Current - '+m])}
+      ${num(d['Missed Deadline Next - '+m])}
+      <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${d['TBD Current - '+m]||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--amber);text-align:center;background:#fffbf0">${d['TBD Next - '+m]||'—'}</td>
+      ${num(d['Chats Reviewed - '+m])}
+      ${num(d['Calls Taken - '+m])}
+      <td style="padding:8px 10px;font-size:12px;color:var(--blue);text-align:center;background:rgba(30,74,138,.04)">${d['Deadlines Today - '+m]||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--red);text-align:center;background:rgba(122,31,31,.03)">${d['Missed Yesterday - '+m]||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--blue);text-align:center;background:rgba(30,74,138,.04)">${d['TL Calls Taken - '+m]||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Sheet checks
+  const sheetRows = ML.filter(m => d['Leave - '+m] !== 'y').map(m =>
+    `<tr>
+      <td style="padding:8px 10px;font-size:12px;color:var(--navy)">${m}</td>
+      <td style="padding:8px 10px;text-align:center">${yn(d['Self Audit Sheet - '+m] || d['Audit Sheet Done - '+m])}</td>
+      <td style="padding:8px 10px;text-align:center">${yn(d['Day Plan Sheet - '+m] || d['Day Plan Done - '+m])}</td>
+    </tr>`).join('');
+
+  // Feedback
+  const fbRows = ML.filter(m => d['Leave - '+m] !== 'y').map(m => {
+    const given = d['Feedback Given - '+m];
+    const note  = d['Feedback Notes - '+m] || '';
+    return `<tr>
+      <td style="padding:8px 10px;font-size:12px;color:var(--navy)">${m}</td>
+      <td style="padding:8px 10px;text-align:center">${yn(given)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--text2);font-style:${note?'normal':'italic'}">${note||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Self-ratings
+  const RCOLS = [
+    {col:'Rating - Initiates Convos',   label:'Initiates accountability'},
+    {col:'Rating - Holds Line',         label:'Holds the line'},
+    {col:'Rating - Data Not Emotion',   label:'Data not emotion'},
+    {col:'Rating - Specific Feedback',  label:'Specific feedback'},
+    {col:'Rating - Follows Up',         label:'Follows up next day'},
+  ];
+  const ratingRows = RCOLS.map(r => {
+    const v = parseInt(d[r.col]) || 0;
+    const stars = [1,2,3,4].map(n =>
+      `<div style="width:26px;height:26px;border-radius:6px;border:1px solid ${n<=v?'var(--gold)':'var(--border)'};background:${n<=v?'var(--gold-bg)':'var(--surface2)'};display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:${n<=v?'var(--gold)':'var(--text3)'};">${n}</div>`
+    ).join('');
+    return `<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;font-size:12px;color:#0e1530">${r.label}</div>
+      <div style="display:flex;gap:5px">${stars}</div>
+    </div>`;
+  }).join('');
+
+  // Fixed questions
+  const FQ_DEFS = [
+    {id:'fq1', label:'Is the pod on track for 70% conversion this cycle?'},
+    {id:'fq2', label:'Which mentor needs the most from you this week?'},
+    {id:'fq3', label:'What objection pattern are you seeing most right now?'},
+    {id:'fq4', label:'Anything you are stuck on that needs Jyotishman?'},
+    {id:'fq5', label:'What would you do differently this week?'},
+  ];
+  const fqRows = FQ_DEFS.map((q,i) => {
+    const ans = d['FQ - '+q.id] || '';
+    return `<div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+      <div style="font-size:9px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.10em;margin-bottom:3px">Q${i+1}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">${q.label}</div>
+      <div style="font-size:13px;color:${ans?'var(--text2)':'var(--border2)'};font-style:${ans?'normal':'italic'};line-height:1.65">${ans||'No answer submitted'}</div>
+    </div>`;
+  }).join('');
+
+  // Reflections
+  const well     = d['Reflection - Did Well'] || '';
+  const hard     = d['Reflection - Was Hard'] || '';
+  const tomorrow = d['Reflection - Tomorrow Focus'] || '';
+
+  // Standup
+  const standup = d['Standup & Training Done'] || d['Standup Done'] || '';
+
+  el.innerHTML = `
+    ${sec('Output numbers — mentor-wise')}
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
+      <table style="width:100%;border-collapse:collapse;background:var(--surface)">
+        <thead><tr style="background:var(--surface2)">
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:left;font-weight:700">Mentor</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Chase curr</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Chase next</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Missed curr</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Missed next</th>
+          <th style="font-size:10px;color:var(--amber);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700;background:var(--amber-bg)">TBD curr</th>
+          <th style="font-size:10px;color:var(--amber);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700;background:var(--amber-bg)">TBD next</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Chats</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700">Calls</th>
+          <th style="font-size:10px;color:var(--blue);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700;background:var(--blue-bg)">DL today</th>
+          <th style="font-size:10px;color:var(--red);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700;background:#fdf0f0">Missed yest.</th>
+          <th style="font-size:10px;color:var(--blue);text-transform:uppercase;padding:9px 10px;text-align:center;font-weight:700;background:var(--blue-bg)">TL calls</th>
+        </tr></thead>
+        <tbody>${outRows}</tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+      <div>
+        ${sec('Daily sheets')}
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;background:var(--surface)">
+            <thead><tr style="background:var(--surface2)">
+              <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:600">Mentor</th>
+              <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:center;font-weight:600">Audit</th>
+              <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:center;font-weight:600">Day plan</th>
+            </tr></thead>
+            <tbody>${sheetRows}</tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        ${sec('Accountability')}
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--surface)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text2)">Standup &amp; training run independently</span>
+            ${yn(standup)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${sec('Feedback given today')}
+    <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem">
+      <table style="width:100%;border-collapse:collapse;background:var(--surface)">
+        <thead><tr style="background:var(--surface2)">
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:600">Mentor</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:center;font-weight:600;width:90px">Given?</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:8px 10px;text-align:left;font-weight:600">What was worked on</th>
+        </tr></thead>
+        <tbody>${fbRows}</tbody>
+      </table>
+    </div>
+
+
+    \${sec('Conversion pulse — mentor by mentor')}
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
+      <table style="width:100%;border-collapse:collapse;background:var(--surface)">
+        <thead><tr style="background:var(--surface2)">
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:left;font-weight:700">Mentor</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:center;font-weight:700">Conversion to date</th>
+          <th style="font-size:10px;color:var(--green);text-transform:uppercase;padding:9px 12px;text-align:center;font-weight:700;background:var(--green-bg)">On pace for 70%?</th>
+          <th style="font-size:10px;color:var(--text3);text-transform:uppercase;padding:9px 12px;text-align:left;font-weight:700">Recovery plan</th>
+        </tr></thead>
+        <tbody>\${ML.map(m => {
+          const pct   = parseFloat(d['Conv Pct - '+m]) || 0;
+          const pace  = d['Conv Pace - '+m] || '';
+          const plan  = d['Conv Plan - '+m] || '';
+          const pctColor = pct>=70?'var(--green)':pct>0?'var(--red)':'var(--text3)';
+          const paceBadge = pace==='y'
+            ? '<span style="color:var(--green);font-weight:600">✓ Yes</span>'
+            : pace==='n'
+            ? '<span style="color:var(--red);font-weight:600">✗ No</span>'
+            : '<span style="color:var(--text3)">—</span>';
+          return \`<tr>
+            <td style="padding:9px 12px;font-size:12px;font-weight:500;color:var(--navy)">\${m}</td>
+            <td style="padding:9px 12px;text-align:center;font-size:13px;font-weight:600;color:\${pctColor}">\${pct>0?pct+'%':'—'}</td>
+            <td style="padding:9px 12px;text-align:center;background:\${pace==='y'?'var(--green-bg)':pace==='n'?'var(--red-bg)':'transparent'}">\${paceBadge}</td>
+            <td style="padding:9px 12px;font-size:12px;color:\${plan?'var(--text2)':'var(--text3)'};font-style:\${plan?'normal':'italic'}">\${plan||'—'}</td>
+          </tr>\`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+
+    ${sec('Self-ratings')}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 18px;margin-bottom:1.5rem">${ratingRows}</div>
+
+    ${sec('Ashi\'s 5 daily questions')}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">${fqRows}</div>
+
+    ${sec('Daily reflection')}
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
+      ${well?`<div style="background:var(--green-bg);border:1px solid rgba(26,92,48,.15);border-radius:10px;padding:14px 18px"><div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Did well</div><div style="font-size:13px;color:var(--text2);line-height:1.7">${well}</div></div>`:''}
+      ${hard?`<div style="background:var(--red-bg);border:1px solid rgba(122,31,31,.15);border-radius:10px;padding:14px 18px"><div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Hard / held back</div><div style="font-size:13px;color:var(--text2);line-height:1.7">${hard}</div></div>`:''}
+      ${tomorrow?`<div style="background:var(--gold-bg);border:1px solid rgba(184,134,11,.18);border-radius:10px;padding:14px 18px"><div style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Tomorrow's focus</div><div style="font-size:13px;color:var(--text2);line-height:1.7">${tomorrow}</div></div>`:''}
+      ${(!well&&!hard&&!tomorrow)?`<div style="color:var(--text3);font-size:13px;font-style:italic">No reflections submitted today.</div>`:''}
+    </div>
+  `;
+}
+
+
+
+
+
+
+
+function init() {
+  document.getElementById('today-label').textContent = today();
+  if(document.getElementById('tracker-tl-label')) document.getElementById('tracker-tl-label').textContent = ACTIVE_TL.name + ' · TL Readiness';
+  buildTLSwitcher();
+  // Preload follow-up badge on startup
+  if (SCRIPT_URL) { appsGet('read_flags').then(d=>{trFlagsData=d;trUpdateBadge();}).catch(()=>{}); }
+  document.getElementById('tr-flag-date') && (document.getElementById('tr-flag-date').value = new Date().toISOString().slice(0,10));
+  if (!SCRIPT_URL) {
+    document.getElementById('setup-banner').style.display = 'block';
+    document.getElementById('loading-overlay').style.display = 'none';
+  } else {
+    loadAll();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
